@@ -1,0 +1,27 @@
+ 
+module compressor_3_2_group(in1, in2, in3, s, c);
+   //Parameters
+  parameter WIDTH=32; //32 or 64
+  parameter EXP_WIDTH=8;
+  parameter SIG_WIDTH=23;
+  parameter BIAS=127;
+  
+  //localparam ADD_WIDTH=3*(SIG_WIDTH+1)+3;
+  localparam SHAMT_WIDTH=6;
+  parameter CLA_GRP_WIDTH=25;
+  parameter N_CLA_GROUPS=2;
+  
+  localparam ADDER_WIDTH=N_CLA_GROUPS*CLA_GRP_WIDTH;
+  
+  parameter code_NaN=32'b0_11111111_1000_0000_0000_0000_0000_000;
+  parameter code_PINF=32'b0_11111111_0000_0000_0000_0000_0000_000;
+  parameter code_NINF=32'b1_11111111_0000_0000_0000_0000_0000_000;
+  
+  parameter GRP_WIDTH=16;
+    
+  input [GRP_WIDTH-1:0] in1, in2, in3;
+  output [GRP_WIDTH-1:0] s, c;
+  
+  compressor_3_2 compress[GRP_WIDTH-1:0](in1, in2,in3, s, c);
+
+endmodule
