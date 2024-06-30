@@ -1,0 +1,128 @@
+
+`timescale 1us/1us
+
+module t_fpfma();
+    
+ //Parameters
+  parameter WIDTH=32; //32 or 64
+
+  reg [WIDTH-1:0]   A,B,C;
+  reg [1:0]           rnd;  
+  reg                 clk;
+  reg                 RST;
+  reg                 enable_FMADD;
+
+  wire [WIDTH-1:0] OUT_FMADD;
+  
+  
+  wire [23:0] aSig={1'b1,A[22:0]};
+  wire [23:0] bSig={1'b1,B[22:0]};
+  wire [23:0] cSig={1'b1,C[22:0]};
+  
+  
+  wire [7:0] aExp = A[30:23]; 
+  wire [7:0] bExp = B[30:23];
+  wire [7:0] cExp = C[30:23];
+  
+    
+  wire [49:0] productSig = aSig * bSig;
+  wire [7:0] productExp = aExp + bExp;
+  
+  
+  
+  fpfma     UUT(
+  .A(A), 
+  .B(B), 
+  .C(C),
+  .rnd(rnd),
+  .clk(clk), 
+  .RST(RST), 
+  .enable_FMADD(enable_FMADD), 
+  .OUT_FMADD(OUT_FMADD)
+  );
+  
+  integer fd;
+  initial begin
+    rnd=2'b01;
+   // fd=$fopen("sub_inputs.txt", "r");//fd=$fopen("testInputs.txt", "r");
+                 //op=0;
+  end
+  
+  
+  integer i;
+  
+  always @ (*) 
+  begin
+    for(i=0;i<100;i=i+1)
+     begin
+      $display(fd, "%x %x %x ", A, B, C);
+      #5
+     $display("A=%x, B=%x, C=%x", A, B, C);
+    
+  
+   end
+ 
+  end
+ 
+  initial
+   begin
+    
+     $dumpfile("fpfma.vcd");
+    $dumpvars ;
+
+//initial values
+clk = 1'b0;
+RST = 1'b1;
+enable_FMADD =1'b0;
+// RST Activation
+#10
+RST = 1'b0 ;
+
+// RST De-activation
+#10
+RST = 1'b1 ;
+
+    A=32'b1000_1100_1001_0001_1110_1001_1110_0000;     //-2.2481546e-31
+    B=32'b0010_1000_1000_0011_1010_1000_0000_0010;     //1.4616783e-14
+    C=32'b0110_0100_1101_1001_0110_0000_1110_0001;     //3.2079395e22
+                                                       //result=-5.511198e32
+      #5                                                 
+                                                       
+    A=32'b01000000010011100110011001100110;  
+    B=32'b01000001000110100101111000110101;     
+    C=32'b11000000101101001011110001101010;     
+                                                       
+                                                        
+    #5;
+    A = 32'b01000001101100100110011001100110; // 22.3
+    B = 32'b10111111000000000000000000000000;  // -0.5
+    C = 32'b00000000000000000000000000000000;  // 0
+#5
+
+A = 32'b01000001011111001100110011001101; // 15.8
+B = 32'b00111111101001100110011001100110;  // 1.3
+ C= 32'b0_10000000_10011001100110011001100;  // 3.2
+#5
+
+A = 32'b1_11111111_00000000000000000000000;  // -inf
+B = 32'b1_10000000_10011001100110011001100;  // -3.2
+ C=32'b0_01111110_01010001111010111000010;  // 0.66
+#5
+
+
+    
+    for (i=0;i<25453;i=i+1)
+     begin
+      A = A + 1;
+      B = B + 1;
+      #5;
+    end
+     #100 $finish;  //finished with simulation 
+  end
+ 
+ 
+	always #5 clk = ~clk;
+
+ 
+endmodule
+

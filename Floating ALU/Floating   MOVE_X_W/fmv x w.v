@@ -1,0 +1,78 @@
+module FMVXW 
+            ( input [31:0] rs,
+  
+input  wire                       CLK ,
+input  wire                       RST ,
+input  wire                       EN ,
+
+
+ 
+                         output reg  [63:0] OUT_FMV_X_W 
+                         );
+ 
+ 
+ //sequential always
+always @ (posedge CLK or negedge RST)
+ begin 
+   if (!RST)
+     begin
+      OUT_FMV_X_W  <= 'b0 ;
+	 end
+   else
+     begin   
+      
+      //always @(*)
+//begin
+if (EN)
+    begin
+     
+ OUT_FMV_X_W = rs[31:0];
+  
+     end
+   end
+ end
+  
+endmodule
+
+
+
+module FMVXW_TB ();
+  reg  [31:0] rs;
+  
+  wire [63:0] OUT_FMV_X_W;
+  wire Flag_FMV_X_W ;
+  reg                       CLK ;
+  reg                       RST ;
+  reg                       EN ;
+  
+  FMVXW FM (.CLK(CLK),.RST(RST),.EN(EN),.rs(rs),.Flag_FMV_X_W(Flag_FMV_X_W),.OUT_FMV_X_W(OUT_FMV_X_W));
+
+
+initial  
+begin
+   $dumpfile("FMVXW.vcd");
+   $dumpvars ;
+   
+$display("\t\t  Time rs  OUT_FMV_X_W ");
+ $monitor("%d %b %b  ", $time , rs, OUT_FMV_X_W); 
+  //initial values
+CLK = 1'b0;
+RST = 1'b1;
+EN = 1'b1 ;
+  
+rs = 32'b11000001011010010110000001000010;  // -14.586 
+
+#20
+rs = 32'b11000010110011001011101101001010;  // -102.3658
+
+#20
+rs = 32'b01000010001111010000011000100101;  // 47.256
+
+#20
+rs = 32'b10111111010010000101000111101100;  // -.7825
+
+
+end
+always #20 CLK = ~CLK;
+endmodule
+
