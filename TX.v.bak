@@ -1,0 +1,142 @@
+
+
+////////// ..RTL_CODE.. /////////
+
+module TX (
+
+input  clk,rst,IN_tx,
+output reg OUT_TX
+
+);
+
+
+  
+// Assign Sig_comb logic to Sig_out register  
+  always @ (posedge clk or posedge rst)
+    begin
+     if(rst) OUT_TX <=0;
+      else OUT_TX <=IN_tx;
+    end
+    
+    
+  endmodule
+  
+  
+  ////////// ..RTL_CODE.. /////////
+
+module RX (
+
+input  clk,rst,en_Rx,OUT_IN_RX,
+output reg OUT_RX
+
+);
+
+
+  
+// Assign Sig_comb logic to Sig_out register  
+  always @ (posedge clk or posedge rst)
+    begin
+     if(rst) OUT_RX <=0;
+      else if(en_Rx) OUT_RX <=OUT_IN_RX;
+    end
+    
+    
+  endmodule
+  
+  
+  
+  ////////// ..RTL_CODE.. /////////
+
+module TX_RX_TOP (
+
+input  clk,rst,en_Rx,IN,
+output reg OUT
+
+);
+
+// Internal Signals
+  reg     OUT_TX,OUT_IN_RX ;
+
+
+ TX DUT0 (
+    .rst(rst),
+    .clk(clk),
+    .IN_tx(IN),
+	  .OUT_TX(OUT_IN_RX)
+  );
+
+
+
+ RX DUT1 (
+    .rst(rst),
+    .clk(clk),
+	  .en_Rx(en_Rx),
+	  .OUT_RX(OUT),
+	  .OUT_IN_RX(OUT_IN_RX)
+  );
+
+
+endmodule
+
+
+////////// ..Testbench.. ///////
+
+`timescale 1us/1us
+module TX_RX_TOP_tb #(parameter Clk_Period=10)();
+
+//localparam Clk_Period=10;
+
+reg  clk,rst,en_Rx,IN_tx;
+wire  OUT;
+
+//initial block..
+initial 
+  begin
+    $dumpfile("TX_RX_TOP.vcd") ;
+    $dumpvars ;
+    //initial values..
+    rst = 1'b0 ;
+    clk = 1'b0 ;
+#Clk_Period
+
+     rst = 1'b1 ;
+     clk = 1'b1 ;
+#Clk_Period
+
+    rst = 1'b0 ;
+    en_Rx = 1'b1 ;
+    IN_tx = 1'b1 ;
+#Clk_Period
+
+    rst = 1'b0 ;
+    clk = 1'b0 ;
+#Clk_Period
+	
+	#(Clk_Period*20);
+	$stop;
+	
+   end
+  
+  
+// Clock Generator (type: Delay Control) 
+  always #(Clk_Period/2) clk = !clk ;
+  
+ /* always
+  begin
+    clk =0;
+  #(Clk_Period/2) ;
+    clk =1;
+    #(Clk_Period/2) ;
+  end*/
+  
+  
+// instaniate design instance 
+  TX_RX_TOP DUT (
+    .rst(rst),
+    .clk(clk),
+    .en_Rx(en_Rx),
+    .IN(IN_tx),
+	  .OUT(OUT)
+  );
+
+endmodule
